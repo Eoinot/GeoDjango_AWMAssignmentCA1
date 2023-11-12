@@ -3,8 +3,7 @@
 Below is the link to the website for this assignment
 https://advancedwebmapping.shop/
 
-The username is: User
-
+The username is: User,
 The password is: Password
 
 This website using a csv containing the location aka longitude and latitude of golf courses in the wicklow and dublin area.
