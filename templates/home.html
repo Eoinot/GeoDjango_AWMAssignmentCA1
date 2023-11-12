@@ -1,0 +1,111 @@
+<!-- templates/home.html-->
+{% extends "base.html" %}
+{% load leaflet_tags %}
+{% block title %}Home{% endblock %}
+
+{% block content %}
+    {% leaflet_css %}
+    {% leaflet_js %}
+{% if user.is_authenticated %}
+  Hi {{ user.username }}!
+
+    <script>
+    function map_init (map, options) {
+        if (!navigator.geolocation) {
+            console.log("error")
+        } else {
+            navigator.geolocation.getCurrentPosition(success);
+            updateLocation(map)
+        }
+
+        function success(position) {
+            const latitude = position.coords.latitude;
+            const longitude = position.coords.longitude;
+            const accuracy = position.coords.accuracy;
+            console.log(accuracy);
+            L.marker([latitude.valueOf(), longitude.valueOf()]).addTo(map);
+            L.circle([latitude.valueOf(), longitude.valueOf()], {radius:accuracy}).addTo(map);
+        }
+    }
+    var HOST = location.protocol + "//" + location.host;
+    {#var HOST = "";#}
+    var locationMarker;
+    var circle;
+
+        function map_init_basic(map, options) {
+            var pos;
+            map.setView([53.5, -8.5], 11);
+            updateLocation(map);
+            map.on('touchstart click dblclick ', function () {
+            updateLocation(map);
+            });
+        }
+
+        function setMapToCurrentLocation(map, pos) {
+            console.log("In setMapToCurrentLocation.");
+            var myLatLon = L.latLng(pos.coords.latitude,
+            pos.coords.longitude);
+            map.flyTo(myLatLon, 16);
+            if (locationMarker) {
+            map.removeLayer(locationMarker);
+            }
+            locationMarker = L.marker(myLatLon).addTo(map);
+            if (circle) {
+            map.removeLayer(circle);
+            }
+            circle = L.circle(myLatLon, {
+            color: 'blue',
+            fillColor: 'blue',
+            fillOpacity: 0.3,
+            radius: pos.coords.accuracy
+            }).addTo(map);
+            $(".toast-body").html("Found location<br>Lat: " + myLatLon.lat + " Lon: " + myLatLon.lng);
+            $(".toast").toast('show');
+        }
+
+        function update_db(pos) {
+            var locString = pos.coords.longitude + ", " + pos.coords.latitude;
+            $.ajax({
+                type: "POST",
+                headers: {
+                'X-CSRFToken': "{{ csrf_token }}"
+                },
+            url: HOST + "/updatedb/",
+            data: {
+            point: locString
+            }
+            }).done(function (data, status, xhr) {
+            console.log(data["message"])
+            var originalMsg = $(".toast-body").html();
+            $(".toast-body").html(originalMsg + "<br/>Updated database<br/>" + data["message"]);
+            }).fail(function (xhr, status, error) {
+            console.log(error);
+            var originalMsg = $(".toast-body").html();
+            $(".toast-body").html(originalMsg + "<br/>" + error);
+            }).always(function () {
+            console.log("find_loc_ed finished");
+            $(".toast").toast('show');
+            });
+        }
+        function updateLocation(map) {
+            navigator.geolocation.getCurrentPosition(
+            function (pos) {
+            setMapToCurrentLocation(map, pos);
+            update_db(pos);
+        },
+        function (err) { },
+            {
+            enableHighAccuracy: true,
+            timeout: 30000
+            }
+        );
+    }
+  </script>
+
+    {% leaflet_map "yourmap" callback="window.map_init_basic"%}
+  <p><a href="{% url 'logout' %}">Log Out</a></p>
+{% else %}
+  <p>You are not logged in</p>
+  <a href="{% url 'login' %}">Log In</a>
+{% endif %}
+{% endblock %}

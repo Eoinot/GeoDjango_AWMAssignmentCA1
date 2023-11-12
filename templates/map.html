@@ -1,0 +1,177 @@
+<!-- templates/home.html-->
+{% extends "base.html" %}
+{% load leaflet_tags %}
+{% load static %}
+{% block title %}Map{% endblock %}
+
+
+<!DOCTYPE html>
+    <html>
+    <head>
+      <link rel="stylesheet" href="{% static 'style.css' %}">
+    </head>
+
+{% block content %}
+    {% leaflet_css %}
+    {% leaflet_js %}
+{% if user.is_authenticated %}
+    <body class="Content">
+    <div>
+        <h1 class="golfCourseTitle">Golf Course Map</h1>
+        {% leaflet_map "yourmap" callback="window.map_init_basic"%}
+        <p class="Paragraph">Above the flags represent local golf courses in the area of Wicklow and dublin</p>
+
+    </div>
+    <div class="Form">
+            <p class="Paragraph">!!! Please input Below to add a new Golf Course !!!</p>
+            <form class="Form">
+            <input class="inputBox" type="text" id="courseName" placeholder="Input Golf Course you wish to add">
+            <input class="inputBox" type="text" id="longitude" placeholder="Input Longitude">
+            <input class="inputBox" type="text" id="latitude" placeholder="Input Latitude">
+                <button class="inputBox" onclick="Add_Course()">Submit Course</button>
+            </form>
+    </div>
+
+    <script>
+
+
+
+    var HOST = location.protocol + "//" + location.host;
+    var HOST = "";
+    var locationMarker;
+    var circle;
+
+
+
+    function Add_Course(){
+
+        var CourseName;
+        var Longitude;
+        var Latitude;
+
+        CourseName = document.getElementById("courseName").value.trim();
+        Longitude = document.getElementById("longitude").value.trim();
+        Latitude = document.getElementById("latitude").value.trim();
+        var location = Latitude + ", " + Longitude;
+
+
+        $.ajax({
+            type: "POST",
+            headers: {
+                'X-CSRFToken': "{{ csrf_token }}"
+            },
+                url: HOST + "/updateCourse/",
+                data: {
+                    courseName: CourseName,
+                    longitude: Longitude,
+                    latitude: Latitude,
+                    location: location
+                }
+                }).done(function (data, status, xhr) {
+                console.log(data["message"])
+
+                var originalMsg = $(".toast-body").html();
+
+                $(".toast-body").html(originalMsg + "<br/>Updated database<br/>" + data["message"]);}).fail(function (xhr, status, error) {console.log(error);
+
+                    var originalMsg = $(".toast-body").html();$(".toast-body").html(originalMsg + "<br/>" + error);}).always(function () {console.log("find_loc_ed finished");
+                    $(".toast").toast('show');
+
+            });
+    }
+
+        function map_init_basic(map, options) {
+            var pos;
+            map.setView([53.5, -8.5], 11);
+            updateLocation(map);
+            {#Add_Course();#}
+        }
+
+        function setMapToCurrentLocation(map, pos) {
+            console.log("In setMapToCurrentLocation.");
+            var myLatLon = L.latLng(pos.coords.latitude,pos.coords.longitude);
+
+            map.flyTo(myLatLon, 12);
+
+            if (locationMarker) {
+                map.removeLayer(locationMarker);
+            }
+
+            locationMarker = L.marker(myLatLon).addTo(map);
+            locationMarker.bindPopup("Your Current Location");
+
+            if (circle) {
+                map.removeLayer(circle);
+            }
+
+            $(".toast-body").html("Found location<br>Lat: " + myLatLon.lat + " Lon: " + myLatLon.lng);
+
+            $(".toast").toast('show');
+        }
+
+        function update_db(pos) {
+            var locString = pos.coords.longitude + ", " + pos.coords.latitude;
+            var golfCourseName = "Portmarnok"
+            $.ajax({
+                type: "POST",
+                headers: {
+                'X-CSRFToken': "{{ csrf_token }}"
+                },
+            url: HOST + "/updatedb/",
+            data: {
+                location: locString,
+                Latitude: pos.coords.latitude,
+                Longitude: pos.coords.longitude,
+                Course: golfCourseName
+            }
+            }).done(function (data, status, xhr) {
+            console.log(data["message"])
+            var originalMsg = $(".toast-body").html();
+
+            $(".toast-body").html(originalMsg + "<br/>Updated database<br/>" + data["message"]);}).fail(function (xhr, status, error) {console.log(error);
+
+                var originalMsg = $(".toast-body").html();$(".toast-body").html(originalMsg + "<br/>" + error);}).always(function () {console.log("find_loc_ed finished");
+                $(".toast").toast('show');
+
+            });
+        }
+
+        function updateLocation(map) {
+            navigator.geolocation.getCurrentPosition(
+            function (pos) {
+            setMapToCurrentLocation(map, pos);
+
+            var CourseIcon = L.icon({
+                iconUrl: '{% static "Red_Flag_Emoji_large.webp" %}',
+                iconSize:     [45,45], // size of the icon
+                shadowSize:   [50, 64], // size of the shadow
+                iconAnchor:   [22, 94], // point of the icon which will correspond to marker's location
+                shadowAnchor: [4, 62],  // the same for the shadow
+                popupAnchor:  [-3, -76] // point from which the popup should open relative to the iconAnchor
+            });
+
+             // iterate over landmarks and calculate distance from each landmark to the user's location
+                {% for golfcourse in golfcourse %}
+                    var golfcourse_latitude = {{ golfcourse.latitude }};
+                    var golfcourse_longitude = {{ golfcourse.longitude }};
+                    var golfcourse_golfcoursename = "{{ golfcourse.golfCourseName }}";
+
+                    var landmarkMarker = L.marker([golfcourse_latitude, golfcourse_longitude],{icon: CourseIcon }).addTo(map);
+                    landmarkMarker.bindPopup(golfcourse_golfcoursename);
+                {% endfor %}
+            update_db(pos);
+        },
+        function (err) { },
+            {
+            enableHighAccuracy:true,
+            timeout: 30000
+            }
+        );
+    }
+  </script>
+  <p><a href="{% url 'logout' %}">Log Out</a></p>
+{% else %}
+  <p>You are not logged in</p>
+  <a href="{% url 'login' %}">Log In</a>
+{% endif %}
+{% endblock %}

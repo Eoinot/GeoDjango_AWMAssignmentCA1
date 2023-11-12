@@ -1,0 +1,52 @@
+#yourmap {
+    height: 450px;
+    width: 40%;
+    align-content: center;
+    margin-left: 30%;
+    margin-top: 5%;
+    border: 3px solid black;
+}
+
+.Paragraph{
+    font-weight: bolder;
+    text-align: center;
+}
+
+.Content{
+    background-color: #4ac1f7;
+}
+
+.golfCourseTitle{
+    font-weight: bolder;
+    text-align: center;
+    margin-bottom: 5%;
+    margin-top: 5%;
+}
+
+.inputBox{
+    transform: translateX(550px);
+    width: 200px;
+}
+
+.Form{
+    align-content: center;
+}
+a:visited {
+  color: black;
+  background-color: transparent;
+  text-decoration: none;
+}
+
+a:hover {
+  color: red;
+  background-color: transparent;
+  text-decoration: underline;
+}
+
+a{
+    margin-left: 925px;
+    /*border:2px black;*/
+    font-size: larger;
+    transform: translateY(25px);
+}
+
