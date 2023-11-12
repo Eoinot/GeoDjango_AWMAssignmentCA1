@@ -10,3 +10,5 @@ This website using a csv containing the location aka longitude and latitude of g
 
 This data is then inputted into the docker container database and then used by the application and displayed using a leaflet map. The website also gives the user the option to input their own golf course using the name and its coordinates and when the page refreshs it then displays a marker to where the coordinates that were entered are
 
+![Alt text](image.png)
+
