@@ -24,12 +24,20 @@
 }
 
 .inputBox{
-    transform: translateX(550px);
-    width: 200px;
+    margin-top: 3%;
+    transform: translateX(50%);
+    width: 15%;
 }
 
-.Form{
+.Form_div{
     align-content: center;
+    margin-top: 2%;
+}
+
+.Form_div2{
+    align-content: center;
+    margin-left: 20%;
+    margin-top: 2%;
 }
 a:visited {
   color: black;
@@ -44,9 +52,10 @@ a:hover {
 }
 
 a{
-    margin-left: 925px;
+    margin-left: 48%;
     /*border:2px black;*/
     font-size: larger;
     transform: translateY(25px);
 }
+
 
