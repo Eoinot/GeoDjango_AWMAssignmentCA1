@@ -16,3 +16,6 @@ Below is the image of the map/home page of the website which you will see once y
 
 As you can see in this image you can view all the markers that have been placed on the locations of the golf courses from the database and when you add your own using the input form that new marker will display on the coordinates that you have entered
 
+Below this image shows all the data from the csv along with custom added courses into the database to then be displayed to be markers
+![Alt text](image-1.png)
+
